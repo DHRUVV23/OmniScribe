@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MeetBot - Automated Meeting Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            padding: 30px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #4285F4;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #5f6368;
+            font-size: 16px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #202124;
+            font-weight: 500;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #dadce0;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        
+        input:focus {
+            border-color: #4285F4;
+            outline: none;
+        }
+        
+        .submit-btn {
+            background-color: #4285F4;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            width: 100%;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .submit-btn:hover {
+            background-color: #3367d6;
+        }
+        
+        .help-text {
+            color: #5f6368;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        
+        .info-box {
+            background-color: #e8f0fe;
+            border-left: 4px solid #4285F4;
+            padding: 15px;
+            margin: 30px 0 15px;
+            border-radius: 5px;
+        }
+        
+        .info-box h3 {
+            color: #1a73e8;
+            margin-bottom: 5px;
+        }
+        
+        .info-box p {
+            color: #3c4043;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .status-container {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .recent-meetings {
+            margin-top: 30px;
+            display: none;
+        }
+        
+        .recent-meetings h3 {
+            color: #202124;
+            margin-bottom: 10px;
+        }
+        
+        .meeting-list {
+            list-style: none;
+        }
+        
+        .meeting-item {
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .meeting-item a {
+            color: #4285F4;
+            text-decoration: none;
+        }
+        
+        .meeting-item a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MeetBot</h1>
+            <p>Automated Meeting Assistant</p>
+        </div>
+        
+        <form id="meetbotForm">
+            <div class="form-group">
+                <label for="email">Google Email</label>
+                <input type="email" id="email" name="email" placeholder="yourname@gmail.com" required>
+                <p class="help-text">The Google account email you use for Google Meet</p>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Google Password</label>
+                <input type="password" id="password" name="password" placeholder="Your password" required>
+                <p class="help-text">Your Google account password</p>
+            </div>
+            
+            <div class="form-group">
+                <label for="meetId">Google Meet ID</label>
+                <input type="text" id="meetId" name="meetId" placeholder="abc-defg-hij" required>
+                <p class="help-text">The meeting code from your Google Meet invitation</p>
+            </div>
+            
+            <div class="info-box">
+                <h3>How It Works</h3>
+                <p>MeetBot will join the specified Google Meet session using your credentials, record the audio, and provide you with a transcript and summary of the meeting.</p>
+            </div>
+            
+            <button type="submit" class="submit-btn">Start MeetBot</button>
+        </form>
+        
+        <div id="status-container" class="status-container"></div>
+        
+        <div id="recent-meetings" class="recent-meetings">
+            <h3>Recent Meetings</h3>
+            <ul id="meeting-list" class="meeting-list"></ul>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadRecentMeetings();
+            
+            document.getElementById('meetbotForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = {
+                    email: document.getElementById('email').value,
+                    password: document.getElementById('password').value,
+                    meetId: document.getElementById('meetId').value
+                };
+                
+                // Show loading state
+                const submitButton = document.querySelector('.submit-btn');
+                submitButton.textContent = 'Processing...';
+                submitButton.disabled = true;
+                
+                // Create status container if it doesn't exist
+                const statusContainer = document.getElementById('status-container');
+                statusContainer.style.display = 'block';
+                statusContainer.innerHTML = '<p>Connecting to meeting...</p>';
+                statusContainer.style.backgroundColor = '#e8f0fe';
+                
+                // Send the data to your backend
+                fetch('/start-meetbot', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                })
+                .then(response => {
+                    // Check if response is valid JSON
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        throw new Error('Server returned non-JSON response');
+                    }
+                    
+                    // Check HTTP status code
+                    if (!response.ok) {
+                        return response.json().then(errorData => {
+                            throw new Error(`Server error (${response.status}): ${errorData.error || 'Unknown error'}`);
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        statusContainer.style.backgroundColor = '#d4edda';
+                        statusContainer.innerHTML = `
+                            <h3 style="color:#155724">Meeting successfully recorded!</h3>
+                            <p>Redirecting to results page...</p>
+                        `;
+                        
+                        // Redirect to the results page
+                        setTimeout(() => {
+                            window.location.href = `/results/${data.sessionId}`;
+                        }, 2000);
+                    } else {
+                        throw new Error(data.error || 'Unknown error occurred');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error details:', error);
+                    statusContainer.style.backgroundColor = '#f8d7da';
+                    statusContainer.innerHTML = `
+                        <h3 style="color:#721c24">Error:</h3>
+                        <p>${error.message}</p>
+                        <p>Check the browser console for more details.</p>
+                    `;
+                })
+                .finally(() => {
+                    // Reset button state
+                    submitButton.textContent = 'Start MeetBot';
+                    submitButton.disabled = false;
+                });
+            });
+        });
+        
+        function loadRecentMeetings() {
+            fetch('/api/meetings')
+                .then(response => response.json())
+                .then(meetings => {
+                    const meetingList = document.getElementById('meeting-list');
+                    meetingList.innerHTML = '';
+                    
+                    if (meetings.length > 0) {
+                        document.getElementById('recent-meetings').style.display = 'block';
+                        
+                        meetings.forEach(meeting => {
+                            const li = document.createElement('li');
+                            li.className = 'meeting-item';
+                            li.innerHTML = `
+                                <span>${meeting.meetId} - ${new Date(meeting.timestamp).toLocaleString()}</span>
+                                <a href="/results/${meeting.id}">View</a>
+                            `;
+                            meetingList.appendChild(li);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading recent meetings:', error);
+                });
+        }
+    </script>
+</body>
+</html>

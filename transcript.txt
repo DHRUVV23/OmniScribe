@@ -1,0 +1,7 @@
+echo "Potatoes were first brought to Europe from America in the fifteen hundreds. They were linked to the dark underworld as they
+ grew underground unlike most crops at the time. In most countries, they were considered dangerous for humans to eat and mostly fed to pigs.
+  So one of the few places where humans might still eat potatoes was prison. And when a French pharmacist named Antoine Parmentier was taken
+   to Prussia as war prisoner, he was fed animal foods such as potatoes. And after the war ended, recalled this experience while studying 
+   nutrition in France, where growing potatoes actually became illegal. But Parmentier believed in the potato and started promoting its 
+   consumption. And when Napoleon promoted him to the first army pharmacist, he started hosting potato dinners with important guests like
+    Benjamin Franklin and stationed guards around his potato garden during the day. So thieves would believe it was a valuable." > transcript.txt
